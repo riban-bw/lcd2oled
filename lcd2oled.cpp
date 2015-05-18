@@ -8,10 +8,12 @@
 
 lcd2oled::lcd2oled(uint8_t ResetPin)
 {
+	m_pBuffer = NULL;
 	pinMode(ResetPin, OUTPUT);
 	digitalWrite(ResetPin, LOW);
-	delay(100);
+	delayMicroseconds(10); //Require 3us reset pulse but let's be generous. Use delayMicroseconds - wiring not yet initialised so delay() won't work!
 	digitalWrite(ResetPin, HIGH);
+//	begin(21, 8); //This causes failure because Reset() is called before wiring is initialised
 }
 
 void lcd2oled::Reset(bool bPump)
@@ -81,14 +83,15 @@ void lcd2oled::AllOn(bool bEnable)
 	SendCommand(bEnable?OLED_CMD_ENTIREON_ENABLE:OLED_CMD_ENTIREON_DISABLE);
 }
 
-void lcd2oled::SetBrightness(byte nBrightness)
+void lcd2oled::SetBrightness(uint8_t nBrightness)
 {
 	SendCommand(OLED_CMD_CONTRAST, nBrightness);
 }
 
 void lcd2oled::begin(uint8_t nColumns, uint8_t nRows, uint8_t nCharSize)
 {
-	m_pBuffer = new uint8_t[nColumns * nRows];
+	if(!m_pBuffer)
+		m_pBuffer = new uint8_t[nColumns * nRows];
 	m_nColumns = nColumns;
 	m_nRows = nRows;
 	Reset(true);
@@ -129,7 +132,7 @@ void lcd2oled::StopScrolling()
 	SendCommand(OLED_CMD_SCROLL_STOP);
 }
 
-void lcd2oled::SendCommand(byte nCommand)
+void lcd2oled::SendCommand(uint8_t nCommand)
 {
 	Wire.beginTransmission(OLED_I2C_ADDRESS);
 	Wire.write(OLED_CMD_MODE);
@@ -137,7 +140,7 @@ void lcd2oled::SendCommand(byte nCommand)
 	Wire.endTransmission();
 }
 
-void lcd2oled::SendCommand(byte nCommand, byte nData)
+void lcd2oled::SendCommand(uint8_t nCommand, uint8_t nData)
 {
 	Wire.beginTransmission(OLED_I2C_ADDRESS);
 	Wire.write(OLED_CMD_MODE);
@@ -147,7 +150,7 @@ void lcd2oled::SendCommand(byte nCommand, byte nData)
 	Wire.endTransmission();
 }
 
-void lcd2oled::SendData(byte nData)
+void lcd2oled::SendData(uint8_t nData)
 {
 	Wire.beginTransmission(OLED_I2C_ADDRESS);
 	Wire.write(OLED_DATA_MODE);
@@ -169,6 +172,16 @@ void lcd2oled::setCursor(uint8_t x, uint8_t y)
 	SendCommand(OLED_CMD_PAGE_START | m_nY);
 	if(bCursor)
 		cursor(); //Show cursor at new position
+}
+
+void noBlink()
+{
+	//!@todo Implement noBlink
+}
+
+void blink()
+{
+	//!@todo Implement blink
 }
 
 void lcd2oled::home()
@@ -206,13 +219,13 @@ void lcd2oled::createChar(uint8_t nIndex, uint8_t* pBitmap)
 void lcd2oled::scrollDisplayLeft()
 {
 	//Clear first column of text
-	for(byte nRow = 0; nRow < m_nRows; ++nRow)
+	for(uint8_t nRow = 0; nRow < m_nRows; ++nRow)
 	{
 		setCursor(0, nRow);
 		write(32);
 	}
 	ConfigureScrolling(OLED_SCROLLRATE_2);
-	for(byte i = 0; i < 6; ++i)
+	for(uint8_t i = 0; i < 6; ++i)
 	{
 		//Burst scrolling for each column of pixels
 		StartScrolling();
@@ -224,13 +237,13 @@ void lcd2oled::scrollDisplayLeft()
 void lcd2oled::scrollDisplayRight()
 {
 	//Clear last column of text
-	for(byte nRow = 0; nRow < m_nRows; ++nRow)
+	for(uint8_t nRow = 0; nRow < m_nRows; ++nRow)
 	{
 		setCursor(m_nColumns - 1, nRow);
 		write(32);
 	}
 	ConfigureScrolling(OLED_SCROLLRATE_2, true);
-	for(byte i = 0; i < 6; ++i)
+	for(uint8_t i = 0; i < 6; ++i)
 	{
 		//Burst scrolling for each column of pixels
 		StartScrolling();
@@ -291,7 +304,7 @@ size_t lcd2oled::write(uint8_t Char)
 
 void lcd2oled::Draw(uint8_t nChar, uint8_t nCursor)
 {
-	for(byte nColumn = 0; nColumn < 5; ++nColumn)
+	for(uint8_t nColumn = 0; nColumn < 5; ++nColumn)
 	{
 		if(nChar < 32)
 			SendData(m_pCustom[nChar][nColumn] | nCursor);

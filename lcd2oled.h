@@ -7,6 +7,9 @@
  *	@note Depends on Wire library
  */
 
+//!@todo	setRowOffsets(int row0, int row1, int row2, int row3) is implemented in LiquidCrystal but not documented - not implemented in lcd2oled
+//!@todo	blink() and noBlink() are not implemented - there is no flashing feature built in to SSD1306 so flashing may require timer functions - may not be simple to implement
+
 #pragma once
 #include "constants.h"
 
@@ -27,7 +30,7 @@ public:
 	/**	@brief	Constructor
 	*	@param	ResetPin Pin connected to OLED reset
 	*/
-	lcd2oled(uint8_t ResetPin);
+	lcd2oled(uint8_t ResetPin); //!@todo URGENT adding constructor stops lcd2oled from working
 
 	/**	@brief	Reset to default settings
 	 *	@param	bPump True to enable charge pump (disabled by default)
@@ -47,14 +50,14 @@ public:
 	 *	@param	nBrightness Value of brightness (0 - 255)
 	 *	@note	Minimum brightness (0) does dims display but does not extinguish it
 	 */
-	void SetBrightness(byte nBrightness);
+	void SetBrightness(uint8_t nBrightness);
 
 	/**	@brief	Rotates display through 180 degrees
 	 *	@param	b180 True to rotate screen 180 degrees.
 	 */
 	void Rotate(bool b180 = true);
 
-	/**	@brief	Starts continuous scroll
+	/**	@brief	Configures continuous scroll
 	*	@param	nSpeed Rate of scrolling [OLED_SCROLLRATE_2 | OLED_SCROLLRATE_3 | OLED_SCROLLRATE_4 | OLED_SCROLLRATE_5 (default) | OLED_SCROLLRATE_25 | OLED_SCROLLRATE_64 | OLED_SCROLLRATE_128 | OLED_SCROLLRATE_256]
 	*	@param	bRight True to scroll right. False to scroll left. Default is false (scroll left)
 	*	@param	nTopRow Index of the first row to scroll. Default is top row
@@ -111,8 +114,15 @@ public:
 	*/
 	void setCursor(uint8_t x, uint8_t y);
 
-	//!@todo Implement void noBlink();
-	//!@todo Implement void blink();
+	/**	@brief	Stops cursor blinking
+	*	@note	Does nothing - blink is not implemented (see documentation)
+	*/
+	void noBlink();
+
+	/**	@brief	Start cursor blinking - not implemented
+	*	@note	Blink is not implemented (see documentation)
+	*/
+	void blink();
 
 	/**	@brief	Scroll whole display one character to left
 	*/
@@ -154,28 +164,28 @@ public:
 
 private:
 	//Send a single bte command message
-	//	nCommand is the OLED command to send
-	void SendCommand(byte nCommand);
+	//	nCommand is the OLED command to send (see constants.h OLED_CMD_...)
+	void SendCommand(uint8_t nCommand);
 	//Send a command with data
-	//	nCommand is the OLED command to send
+	//	nCommand is the OLED command to send (see constants.h OLED_CMD_...)
 	//	nData is the data byte to send
-	void SendCommand(byte nCommand, byte nData);
+	void SendCommand(uint8_t nCommand, uint8_t nData);
 	//Send data to the GDDRAM
-	//	nData is the data byte to send
-	void SendData(byte nData);
+	//	nData is the data byte to send (writes 8 pixels in vertical column at current draw position and moves to next column)
+	void SendData(uint8_t nData);
 	//Draws the character at the current cursor position
-	//	nChar = ASCII character to draw
-	//	nCursor = 0x80 to draw underscore cursor
-	void Draw(byte nChar, byte nCursor = 0x00);
-	//Redraws the character at the current cursor position
+	//	nChar = Character to draw (ASCII / HD44780 character set - see charsets.h)
+	//	nCursor = 0x80 to draw underscore cursor (actually this is logically OR'd with each column so could also use 0x40 to strike through)
+	void Draw(uint8_t nChar, uint8_t nCursor = 0x00);
+	//Redraws the character at the current cursor position including underscore cursor if enabled
 	void Redraw();
-	uint8_t m_nColumns; // Quantity of columns in display
-	uint8_t m_nRows;  // Quantity of rows in display
-	uint8_t m_nCursor; // 0x80 if cursor enabled else 0x00
-	uint8_t m_nX; // Current cursor column
-	uint8_t m_nY; // Current cursor row
-	uint8_t * m_pBuffer; // Pointer to buffer holding current display
+	uint8_t m_nColumns;		// Quantity of columns in display
+	uint8_t m_nRows;		// Quantity of rows in display
+	uint8_t m_nCursor;		// 0x80 if cursor enabled else 0x00
+	uint8_t m_nX;			// Current cursor column
+	uint8_t m_nY;			// Current cursor row
+	bool m_bLeftToRight;	// True left-to-right mode. False for right-to-left mode
+	bool m_bAutoscroll;		// True to enable autoscroll mode
 	uint8_t m_pCustom[OLED_CUSTOM_CHARS][5]; // Custom character glyphs
-	bool m_bLeftToRight; // True left-to-right mode. False for right-to-left mode
-	bool m_bAutoscroll; // True to enable autoscroll mode
+	uint8_t * m_pBuffer; 	// Pointer to buffer holding current display
 };
