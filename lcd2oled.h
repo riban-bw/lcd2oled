@@ -30,7 +30,7 @@ public:
 	/**	@brief	Constructor
 	*	@param	ResetPin Pin connected to OLED reset
 	*/
-	lcd2oled(uint8_t ResetPin); //!@todo URGENT adding constructor stops lcd2oled from working
+	lcd2oled(uint8_t ResetPin);
 
 	/**	@brief	Reset to default settings
 	 *	@param	bPump True to enable charge pump (disabled by default)

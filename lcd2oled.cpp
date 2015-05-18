@@ -18,6 +18,7 @@ lcd2oled::lcd2oled(uint8_t ResetPin)
 
 void lcd2oled::Reset(bool bPump)
 {
+	//!@todo Do we need to reset if we are doing so in hardware?
 	m_nCursor = 0x00; //No cursor
 	m_bLeftToRight = true;
 	m_bAutoscroll = false;

@@ -23,7 +23,7 @@ LiquidCrystal(3,4,5,6,7,8);
 to
 
 ```
-led2olde(3);
+led2oled(3);
 ```
 
 # Usage
