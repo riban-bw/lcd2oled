@@ -9,7 +9,6 @@
 
 //!@todo	setRowOffsets(int row0, int row1, int row2, int row3) is implemented in LiquidCrystal but not documented - not implemented in lcd2oled
 //!@todo	blink() and noBlink() are not implemented - there is no flashing feature built in to SSD1306 so flashing may require timer functions - may not be simple to implement
-
 #pragma once
 #include "constants.h"
 
@@ -22,20 +21,20 @@
 #define OLED_I2C_ADDRESS 0x3C //I2C address - may be 0x3C or 0x3D, depending on hardware configuration
 #define OLED_CUSTOM_CHARS 8 //Quantity of custom characters (max=32)
 
-class lcd2oled : public  Print
-{
+class lcd2oled: public Print {
 public:
 	//OLED specific functions
 
 	/**	@brief	Constructor
-	*	@param	ResetPin Pin connected to OLED reset
-	*/
-	lcd2oled(uint8_t ResetPin);
+	 *	@param	ResetPin Pin connected to OLED reset. Default not use reset pin
+	 */
+	lcd2oled(uint8_t ResetPin = 0xFF);
 
-	/**	@brief	Reset to default settings
-	 *	@param	bPump True to enable charge pump (disabled by default)
-	 *	@note	This is the equivalent of pulsing the hardware RESET line lower_bound*/
-	void Reset(bool bPump = false);
+	/**	@brief	Reset OLED modules
+	 *	@note	If reset pin not configured then this does nothing
+	 *	@todo	Perform software reset if hardware reset not configured
+	 */
+	void Reset();
 
 	/**	@brief	Draws test pattern
 	 */
@@ -58,30 +57,33 @@ public:
 	void Rotate(bool b180 = true);
 
 	/**	@brief	Configures continuous scroll
-	*	@param	nSpeed Rate of scrolling [OLED_SCROLLRATE_2 | OLED_SCROLLRATE_3 | OLED_SCROLLRATE_4 | OLED_SCROLLRATE_5 (default) | OLED_SCROLLRATE_25 | OLED_SCROLLRATE_64 | OLED_SCROLLRATE_128 | OLED_SCROLLRATE_256]
-	*	@param	bRight True to scroll right. False to scroll left. Default is false (scroll left)
-	*	@param	nTopRow Index of the first row to scroll. Default is top row
-	*	@param	nBottomRow Index of last row to scroll. Default is bottom row
-	*	@note	Scrolling is continuous, wrapping to other side of screen
-	*/
-	void ConfigureScrolling(uint8_t nSpeed = OLED_SCROLLRATE_5, bool bRight = false, uint8_t nTopRow = 0, uint8_t nBottomRow = 7);
+	 *	@param	nSpeed Rate of scrolling [OLED_SCROLLRATE_2 | OLED_SCROLLRATE_3 | OLED_SCROLLRATE_4 | OLED_SCROLLRATE_5 (default) | OLED_SCROLLRATE_25 | OLED_SCROLLRATE_64 | OLED_SCROLLRATE_128 | OLED_SCROLLRATE_256]
+	 *	@param	bRight True to scroll right. False to scroll left. Default is false (scroll left)
+	 *	@param	nTopRow Index of the first row to scroll. Default is top row
+	 *	@param	nBottomRow Index of last row to scroll. Default is bottom row
+	 *	@note	Scrolling is continuous, wrapping to other side of screen
+	 */
+	void ConfigureScrolling(uint8_t nSpeed = OLED_SCROLLRATE_5, bool bRight =
+			false, uint8_t nTopRow = 0, uint8_t nBottomRow = 7);
 
 	/**	@brief	Start continuous scroll
-	*/
+	 */
 	void StartScrolling();
 
 	/**	@brief	Stop continuous scroll
-	*/
+	 */
 	void StopScrolling();
 
 	//LiquidCrystal library emulation functions
 
 	/**	@brief	Initialises display
-	*	@param	nColumns Quantity of columns in display (default is 21)
-	*	@param	nColumns Quantity of rows in display (default is 8)
-	*	@param	nCharSize Not used
-	*/
-	void begin(uint8_t nColumns = 21, uint8_t nRows = 8, uint8_t nCharSize = 0);
+	 *	@param	nColumns Quantity of columns in display (default is 21)
+	 *	@param	nColumns Quantity of rows in display (default is 8)
+	 *	@param	nCharSize Not used - for compatibility with LiquidCrystal API
+	 *	@param	bChargePump False to disable OLED charge pump. Default enabled
+	 *	@note	Charge pump is used to create voltage required to run OLED if supply is insufficient. Probably needs to be enabled for 5V or lower supplies
+	 */
+	void begin(uint8_t nColumns = 21, uint8_t nRows = 8, uint8_t nCharSize = 0, bool bChargePump = true);
 
 	/**	@brief	Turns display on
 	 */
@@ -109,48 +111,48 @@ public:
 	void cursor();
 
 	/**	@brief	Set the position of the print cursor, i.e. where next character will be printed
-	*	@param	x Index of column (0 - MaxColumn)
-	*	@param	y Index of row (0 - MaxRow)
-	*/
+	 *	@param	x Index of column (0 - MaxColumn)
+	 *	@param	y Index of row (0 - MaxRow)
+	 */
 	void setCursor(uint8_t x, uint8_t y);
 
 	/**	@brief	Stops cursor blinking
-	*	@note	Does nothing - blink is not implemented (see documentation)
-	*/
+	 *	@note	Does nothing - blink is not implemented (see documentation)
+	 */
 	void noBlink();
 
 	/**	@brief	Start cursor blinking - not implemented
-	*	@note	Blink is not implemented (see documentation)
-	*/
+	 *	@note	Blink is not implemented (see documentation)
+	 */
 	void blink();
 
 	/**	@brief	Scroll whole display one character to left
-	*/
+	 */
 	void scrollDisplayLeft();
 
 	/**	@brief	Scroll whole display one character to right
-	*/
+	 */
 	void scrollDisplayRight();
 
 	/**	@brief	Set direction of text to left-to-right
-	*	@note	Does not update display. Each character written will be to the right of previously written character
-	*/
+	 *	@note	Does not update display. Each character written will be to the right of previously written character
+	 */
 	void leftToRight();
 
 	/**	@brief	Set direction of text to right-to-left
-	*	@note	Does not update display. Each character written will be to the left of previously written character
-	*/
+	 *	@note	Does not update display. Each character written will be to the left of previously written character
+	 */
 	void rightToLeft();
 
 	/**	@brief	Enable autoscroll mode
-	*	@note	Whole display scrolls before each character is written.
-	*	@note	Scroll direction depends on print direction (left-to-right / right-to-left)
-	*/
+	 *	@note	Whole display scrolls before each character is written.
+	 *	@note	Scroll direction depends on print direction (left-to-right / right-to-left)
+	 */
 	void autoscroll();
 
 	/**	@brief	Disables autoscroll mode
-	*	@see	autoscroll
-	*/
+	 *	@see	autoscroll
+	 */
 	void noAutoscroll();
 
 	void createChar(uint8_t, uint8_t[]);
@@ -179,12 +181,13 @@ private:
 	void Draw(uint8_t nChar, uint8_t nCursor = 0x00);
 	//Redraws the character at the current cursor position including underscore cursor if enabled
 	void Redraw();
+	uint8_t m_nResetPin;// Index of pin connected to OLED reset - 0xFF if not used
 	uint8_t m_nColumns;		// Quantity of columns in display
 	uint8_t m_nRows;		// Quantity of rows in display
 	uint8_t m_nCursor;		// 0x80 if cursor enabled else 0x00
 	uint8_t m_nX;			// Current cursor column
 	uint8_t m_nY;			// Current cursor row
-	bool m_bLeftToRight;	// True left-to-right mode. False for right-to-left mode
+	bool m_bLeftToRight;// True left-to-right mode. False for right-to-left mode
 	bool m_bAutoscroll;		// True to enable autoscroll mode
 	uint8_t m_pCustom[OLED_CUSTOM_CHARS][5]; // Custom character glyphs
 	uint8_t * m_pBuffer; 	// Pointer to buffer holding current display

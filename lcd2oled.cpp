@@ -6,55 +6,29 @@
 #include "lcd2oled.h"
 #include "charsets.h"
 
-lcd2oled::lcd2oled(uint8_t ResetPin)
+lcd2oled::lcd2oled(uint8_t ResetPin) :
+	m_nResetPin(ResetPin),
+	m_nCursor(0),
+	m_bLeftToRight(true),
+	m_bAutoscroll(false),
+	m_pBuffer(NULL)
 {
-	m_pBuffer = NULL;
-	pinMode(ResetPin, OUTPUT);
-	digitalWrite(ResetPin, LOW);
-	delayMicroseconds(10); //Require 3us reset pulse but let's be generous. Use delayMicroseconds - wiring not yet initialised so delay() won't work!
-	digitalWrite(ResetPin, HIGH);
-//	begin(21, 8); //This causes failure because Reset() is called before wiring is initialised
+	if(m_nResetPin)
+	{
+		pinMode(m_nResetPin, OUTPUT);
+		Reset();
+	}
+	Wire.begin();
 }
 
-void lcd2oled::Reset(bool bPump)
+void lcd2oled::Reset()
 {
-	//!@todo Do we need to reset if we are doing so in hardware?
-	m_nCursor = 0x00; //No cursor
-	m_bLeftToRight = true;
-	m_bAutoscroll = false;
-	Wire.begin(); //!@todo move Wire.begin() to init (or begin)
-	//turn display off whilst we configure it
-	noDisplay();
-	//Configure pages (rows) 0 - 7)
-	SendCommand(OLED_CMD_PAGE_ADDRESS, 0x00);
-	SendCommand(0x07);
-	SendCommand(OLED_CMD_COLUMN_RANGE, 0x00);
-	SendCommand(0x7F);
-	//Select horizontal mode (wrap at end of row)
-	SendCommand(OLED_CMD_MEMORY_ADDRESS_MODE, OLED_MODE_HORIZONTAL); //Reset sets to Page mode but we want horizontal
-	//Set offset to zero
-	SendCommand(OLED_CMD_OFFSET, 0);
-	//OLED physical configuration
-	SendCommand(OLED_CMD_MUX_RATIO, 0x3F);
-	SendCommand(OLED_CMD_PIN_CONFIG, OLED_PIN_ALT);
-	Rotate(false); //Assume LCD is installed right way up - user must rotate in code if installed upside down
-	SendCommand(OLED_CMD_CLOCK_DIVIDE, 0xF0); //Fastest clock (default is 0x80) to improve scroll speed and accuracy
-	SendCommand(OLED_CMD_PRECHARGE_PERIOD, 0xF1);
-	//Turn on charge pump
-	if(bPump)
-		SendCommand(OLED_CMD_CHARGE_PUMP, 0x14);
-	//Set medium brightness
-	SendCommand(OLED_CMD_CONTRAST, 0x7F);
-	//Do not invert display
-	SendCommand(OLED_CMD_NORMAL);
-	//Set Vcom deslect to 77% of Vcc
-	SendCommand(OLED_CMD_VCOM_LEVEL, OLED_VCOM_77);
-	//Disable scrolling
-	SendCommand(OLED_CMD_SCROLL_STOP);
-	//Clear display
-	clear();
-	//Turn display on (not on by default after reset)
-	display();
+	if(m_nResetPin)
+	{
+		digitalWrite(m_nResetPin, LOW);
+		delayMicroseconds(10); //Require 3us reset pulse but let's be generous. Use delayMicroseconds - wiring not yet initialised so delay() won't work!
+		digitalWrite(m_nResetPin, HIGH);
+	}
 }
 
 void lcd2oled::clear()
@@ -89,13 +63,44 @@ void lcd2oled::SetBrightness(uint8_t nBrightness)
 	SendCommand(OLED_CMD_CONTRAST, nBrightness);
 }
 
-void lcd2oled::begin(uint8_t nColumns, uint8_t nRows, uint8_t nCharSize)
+void lcd2oled::begin(uint8_t nColumns, uint8_t nRows, uint8_t nCharSize, bool bChargePump)
 {
 	if(!m_pBuffer)
 		m_pBuffer = new uint8_t[nColumns * nRows];
 	m_nColumns = nColumns;
 	m_nRows = nRows;
-	Reset(true);
+	//turn display off whilst we configure it
+	noDisplay();
+	//Configure pages (rows) 0 - 7)
+	SendCommand(OLED_CMD_PAGE_ADDRESS, 0x00);
+	SendCommand(0x07);
+	SendCommand(OLED_CMD_COLUMN_RANGE, 0x00);
+	SendCommand(0x7F);
+	//Select horizontal mode (wrap at end of row)
+	SendCommand(OLED_CMD_MEMORY_ADDRESS_MODE, OLED_MODE_HORIZONTAL); //Reset sets to Page mode but we want horizontal
+	//Set offset to zero
+	SendCommand(OLED_CMD_OFFSET, 0);
+	//OLED physical configuration
+	SendCommand(OLED_CMD_MUX_RATIO, 0x3F);
+	SendCommand(OLED_CMD_PIN_CONFIG, OLED_PIN_ALT);
+	Rotate(false); //Assume LCD is installed right way up - user must rotate in code if installed upside down
+	SendCommand(OLED_CMD_CLOCK_DIVIDE, 0xF0); //Fastest clock (default is 0x80) to improve scroll speed and accuracy
+	SendCommand(OLED_CMD_PRECHARGE_PERIOD, 0xF1);
+	//Turn on charge pump
+	if(bChargePump)
+		SendCommand(OLED_CMD_CHARGE_PUMP, 0x14);
+	//Set medium brightness
+	SendCommand(OLED_CMD_CONTRAST, 0x7F);
+	//Do not invert display
+	SendCommand(OLED_CMD_NORMAL);
+	//Set Vcom deslect to 77% of Vcc
+	SendCommand(OLED_CMD_VCOM_LEVEL, OLED_VCOM_77);
+	//Disable scrolling
+	SendCommand(OLED_CMD_SCROLL_STOP);
+	//Clear display
+	clear();
+	//Turn display on (not on by default after reset)
+	display();
 }
 
 void lcd2oled::display()
