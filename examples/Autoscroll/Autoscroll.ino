@@ -1,12 +1,12 @@
 /*
-  lcd2olde Library - Hello World
+  lcd2olde Library - Autoscroll
 
  Demonstrates the use a 128x64 pixel (21x8 character) OLED display.  The lcd2oled
  library works with OLED displays that are compatible with the
  Solomon SysTech SDD1306 driver.
 
- This sketch prints "Hello World!" to the OLED
- and shows the time.
+ This sketch demonstrates the use of the autoscroll()
+ and noAutoscroll() functions to make new text scroll or not.
 
   The circuit:
  * OLED RES# pin to digital pin 12
@@ -29,15 +29,30 @@ lcd2oled lcd(12);
 void setup() {
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
-  // Print a message to the LCD.
-  lcd.print("hello, world!");
 }
 
 void loop() {
-  // set the cursor to column 0, line 1
-  // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(0, 1);
-  // print the number of seconds since reset:
-  lcd.print(millis() / 1000);
+  // set the cursor to (0,0):
+  lcd.setCursor(0, 0);
+  // print from 0 to 9:
+  for (int thisChar = 0; thisChar < 10; thisChar++) {
+    lcd.print(thisChar);
+    delay(500);
+  }
+
+  // set the cursor to (16,1):
+  lcd.setCursor(16, 1);
+  // set the display to automatically scroll:
+  lcd.autoscroll();
+  // print from 0 to 9:
+  for (int thisChar = 0; thisChar < 10; thisChar++) {
+    lcd.print(thisChar);
+    delay(500);
+  }
+  // turn off automatic scrolling
+  lcd.noAutoscroll();
+
+  // clear screen for the next loop:
+  lcd.clear();
 }
 
