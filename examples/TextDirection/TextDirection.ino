@@ -20,6 +20,12 @@
  https://github.com/riban-bw/lcd2oled
  */
 
+// include the library code:
+#include <lcd2oled.h>
+
+// Initialise the library with the numbers of the interface pins
+lcd2oled lcd(12);
+
 int thisChar = 'a';
 
 void setup() {

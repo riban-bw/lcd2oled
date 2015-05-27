@@ -222,6 +222,16 @@ void lcd2oled::createChar(uint8_t nIndex, uint8_t* pBitmap)
 	}
 }
 
+void lcd2oled::noBlink()
+{
+	//!@todo noBlink does nothing
+}
+
+void lcd2oled::blink()
+{
+	//!@todo blink does nothing
+}
+
 void lcd2oled::scrollDisplayLeft()
 {
 	//Clear first column of text
