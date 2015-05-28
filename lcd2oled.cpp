@@ -5,6 +5,7 @@
 #include "Wire.h"
 #include "lcd2oled.h"
 #include "charsets.h"
+#include <avr/pgmspace.h>
 
 lcd2oled::lcd2oled(uint8_t ResetPin) :
 	m_nResetPin(ResetPin),
@@ -344,7 +345,7 @@ void lcd2oled::Draw(uint8_t nChar, uint8_t nCursor)
 		if(nChar < 32)
 			SendData(m_pCustom[nChar][nColumn] | nCursor);
 		else
-			SendData(FONT_5x7[nChar - 32][nColumn] | nCursor); //!@todo get from program memory
+			SendData(pgm_read_word_near(FONT_5x7[nChar - 32][nColumn] | nCursor));
 	}
 	SendData(0); //Add inter-character space
 }

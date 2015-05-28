@@ -14,8 +14,7 @@
 	Derived from OzOLED character set with following licence:
 		This font be freely used without any restriction(It is placed in public domain)
 */
-//!@todo put in program memory
-const byte FONT_5x7[][5] {
+const byte FONT_5x7[][5] PROGMEM = {
 	{0x00,0x00,0x00,0x00,0x00}, // space
 	{0x00,0x5F,0x00,0x00,0x00}, // !
 	{0x00,0x07,0x00,0x07,0x00}, // "
@@ -121,8 +120,7 @@ const byte FONT_5x7[][5] {
 	Derived from OzOLED character set with following licence:
 		This font be freely used without any restriction(It is placed in public domain)
 */
-//!@todo put in program memory
-const byte FONT_5x7[][5] {
+const byte FONT_5x7[][5] PROGMEM = {
 	{0x00,0x00,0x00,0x00,0x00}, // space
 	{0x00,0x5F,0x00,0x00,0x00}, // !
 	{0x00,0x07,0x00,0x07,0x00}, // "

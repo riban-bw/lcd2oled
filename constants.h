@@ -5,10 +5,10 @@
 #pragma once
 
 //Mode: D/C# bit (b6) = 0 for data or 1 for command
-//Fundemental commands
+//Fundamental commands
 #define OLED_CMD_MODE				0x80 //Sets display to command mode
 #define OLED_DATA_MODE				0x40 //Sets display to data mode (to write to GDDRAM)
-
+//Display control commands
 #define OLED_CMD_CONTRAST			0x81 //1 data word. Set display contrast (0-255)
 #define OLED_CMD_ENTIREON_DISABLE	0xA4 //0 data word. Use normal graphics memory for display
 #define OLED_CMD_ENTIREON_ENABLE	0xA5 //0 data word. Turns on all display pixels
@@ -86,6 +86,6 @@
 #define OLED_SCROLLRATE_256 3
 //Rotation
 #define OLED_ROTATE_0	0	//No rotation
-#define OLED_ROTATE_90	1	//Rotation 90 degrees clockwise
-#define OLED_ROTATE_180	2	//Rotation 180 degrees clockwise
+#define OLED_ROTATE_180	1	//Rotation 180 degrees clockwise
+#define OLED_ROTATE_90	2	//Rotation 90 degrees clockwise
 #define OLED_ROTATE_270	3	//Rotation 270 degrees clockwise
