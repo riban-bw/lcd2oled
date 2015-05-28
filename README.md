@@ -55,9 +55,13 @@ The size of the display area may be set using the begin(Width, Height) function.
 
 There is one pixel between each row. This space is also used for the underscore cursor. This may not be as obvious as a larger LCD display. There is no blinking cursor. (The author believes this could be implemented but would require modification to the userspace application to provide regular poking of the lcd2oled instance, e.g. lcd.poke() in main program loop. Such modification does not align with API compatibility but may be considered as an enhancement.
 
-Similar to the LiquidCrystal library, led2oled intialises display to 21 x 8 (LiquidCrystal initialises to 16 x 1) so user only needs to call begin() to change display size.   
+begin() must be called to configure display. This differs from the LiquidCrystal library which calls begin(16, 1) during instantiation.
 
-There are several other OLED libraries available which provide graphic capability. lcd2oled specifically avoids providing such functionality. It is targetted at developers who require text only display and who may already be familiar with the LiquidCrystal library or wish to port designs from HD 44780 LCD to SSD1306 OLED. The code within lcd2oled is not based on any other works. The character set is based on OzOLED character set which is provided for use without any restriction (It is placed in public domain). (This character set is slightly modified to centre the "i" and "I" characters.
+There are several other OLED libraries available which provide graphic capability. lcd2oled specifically avoids providing such functionality. It is targeted at developers who require text only display and who may already be familiar with the LiquidCrystal library or wish to port designs from HD 44780 LCD to SSD1306 OLED.
+
+lcd2oled uses a buffer to store the screen characters which is likely to be smaller than the buffer used by other libraries to store the screen pixels. This may result in led2oled having smaller memory footprint than other libraries.
+
+The code within lcd2oled is not based on any other works. The character set is based on OzOLED character set which is provided for use without any restriction. (It is placed in public domain.) (This character set is slightly modified to centre the "i" and "I" characters.
 
 The default character set is similar to that used by the HD44780. This differs from ASCII in three places:
 

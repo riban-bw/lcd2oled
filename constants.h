@@ -84,3 +84,8 @@
 #define OLED_SCROLLRATE_64 1
 #define OLED_SCROLLRATE_128 2
 #define OLED_SCROLLRATE_256 3
+//Rotation
+#define OLED_ROTATE_0	0	//No rotation
+#define OLED_ROTATE_90	1	//Rotation 90 degrees clockwise
+#define OLED_ROTATE_180	2	//Rotation 180 degrees clockwise
+#define OLED_ROTATE_270	3	//Rotation 270 degrees clockwise

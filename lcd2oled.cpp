@@ -1,4 +1,4 @@
-/*	lcd2oled.cpp Implementation of riban OLED library with LiquidCrystal library compatible API for Arduino using I2C interface
+/*	lcd2oled.cpp Implementation of OLED library with LiquidCrystal library compatible API for Arduino using I2C interface
 *	Copyright (c) riban.co.uk 2015
 */
 
@@ -9,6 +9,7 @@
 lcd2oled::lcd2oled(uint8_t ResetPin) :
 	m_nResetPin(ResetPin),
 	m_nCursor(0),
+	m_nRotation(OLED_ROTATE_0),
 	m_bLeftToRight(true),
 	m_bAutoscroll(false),
 	m_pBuffer(NULL)
@@ -113,10 +114,26 @@ void lcd2oled::noDisplay()
 	SendCommand(OLED_CMD_DISPLAY_OFF);
 }
 
-void lcd2oled::Rotate(bool b180)
+void lcd2oled::Rotate(uint8_t nRotate)
 {
-	SendCommand(b180?OLED_CMD_SCAN_BOTTOM2TOP:OLED_CMD_SCAN_TOP2BOTTOM);
-	SendCommand(b180?OLED_CMD_SCAN_RIGHT2LEFT:OLED_CMD_SCAN_LEFT2RIGHT);
+	switch(nRotate)
+	{
+		case OLED_ROTATE_0:
+			SendCommand(OLED_CMD_SCAN_TOP2BOTTOM);
+			SendCommand(OLED_CMD_SCAN_LEFT2RIGHT);
+			break;
+		case OLED_ROTATE_180:
+			SendCommand(OLED_CMD_SCAN_BOTTOM2TOP);
+			SendCommand(OLED_CMD_SCAN_RIGHT2LEFT);
+			break;
+		case OLED_ROTATE_90:
+			//!@todo Implement 90 degree rotation
+#pragma message "Rotate 90 degrees not implemented"
+			break;
+		case OLED_ROTATE_270:
+#pragma message "Rotate 270 degrees not implemented"
+			break;
+	}
 }
 
 void lcd2oled::ConfigureScrolling(uint8_t nSpeed, bool bRight, uint8_t nTopRow, uint8_t nBottomRow)
@@ -180,16 +197,6 @@ void lcd2oled::setCursor(uint8_t x, uint8_t y)
 		cursor(); //Show cursor at new position
 }
 
-void noBlink()
-{
-	//!@todo Implement noBlink
-}
-
-void blink()
-{
-	//!@todo Implement blink
-}
-
 void lcd2oled::home()
 {
 	setCursor(0, 0);
@@ -224,12 +231,12 @@ void lcd2oled::createChar(uint8_t nIndex, uint8_t* pBitmap)
 
 void lcd2oled::noBlink()
 {
-	//!@todo noBlink does nothing
+#pragma message "WARNING: noBlink() is not implemented in lcd2oled library"
 }
 
 void lcd2oled::blink()
 {
-	//!@todo blink does nothing
+#pragma message "WARNING: blink() is not implemented in lcd2oled library"
 }
 
 void lcd2oled::scrollDisplayLeft()
@@ -238,7 +245,7 @@ void lcd2oled::scrollDisplayLeft()
 	for(uint8_t nRow = 0; nRow < m_nRows; ++nRow)
 	{
 		setCursor(0, nRow);
-		write(32);
+		Write(32);
 	}
 	ConfigureScrolling(OLED_SCROLLRATE_2);
 	for(uint8_t i = 0; i < 6; ++i)
@@ -290,6 +297,23 @@ void lcd2oled::noAutoscroll()
 
 size_t lcd2oled::write(uint8_t Char)
 {
+	//!@todo Test autoscroll - Redraw is repeated in Write(). Can Write() be called after scrollDisplay?
+	if(0 == Write(Char))
+		return(0);
+	if(m_bAutoscroll)
+	{
+		if(m_bLeftToRight)
+			scrollDisplayLeft();
+		else
+			scrollDisplayRight();
+	}
+	if(0x80 == m_nCursor)
+		Redraw(); //Redraws next character with cursor underscore
+	return(1);
+}
+
+size_t lcd2oled::Write(uint8_t Char)
+{
 	if(m_nX >= m_nColumns)
 		return 0; //Don't attempt to draw beyond end of display
 	uint8_t nChar = Char;
@@ -308,11 +332,6 @@ size_t lcd2oled::write(uint8_t Char)
 			SendCommand(OLED_CMD_PAGE_START | m_nY);
 		}
 	}
-	if(m_bAutoscroll)
-		if(m_bLeftToRight)
-			scrollDisplayLeft(); //!@todo URGENT: This causes howl-round
-		else
-			scrollDisplayRight();
 	if(0x80 == m_nCursor)
 		Redraw(); //Redraws next character with cursor underscore
 	return(1);

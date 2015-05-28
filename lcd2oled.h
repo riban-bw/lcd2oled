@@ -1,4 +1,4 @@
-/*	lcd2oled.h Declaration of riban OLED library with LiquidCrystal library compatible API for Arduino using I2C interface
+/*	lcd2oled.h Declaration of OLED library with LiquidCrystal library compatible API for Arduino using I2C interface
  *	Copyright (c) riban.co.uk 2015
  *
  *	Provides emulation of 21x8 LCD (HD44870) character interface
@@ -52,9 +52,10 @@ public:
 	void SetBrightness(uint8_t nBrightness);
 
 	/**	@brief	Rotates display through 180 degrees
-	 *	@param	b180 True to rotate screen 180 degrees.
+	 *	@param	nRotate Rotation degree (OLED_ROTATE_0 | OLED_ROTATE_90 | OLED_ROTATE_180 | OLED_ROTATE_270)
+	 *	@note	Only OLED_ROTATE_0 and OLED_ROTATE_180 are currently implemented
 	 */
-	void Rotate(bool b180 = true);
+	void Rotate(uint8_t nRotate = OLED_ROTATE_180);
 
 	/**	@brief	Configures continuous scroll
 	 *	@param	nSpeed Rate of scrolling [OLED_SCROLLRATE_2 | OLED_SCROLLRATE_3 | OLED_SCROLLRATE_4 | OLED_SCROLLRATE_5 (default) | OLED_SCROLLRATE_25 | OLED_SCROLLRATE_64 | OLED_SCROLLRATE_128 | OLED_SCROLLRATE_256]
@@ -155,13 +156,17 @@ public:
 	 */
 	void noAutoscroll();
 
-	void createChar(uint8_t, uint8_t[]);
+	/**	@brief	Create a custom character
+	*	@param	nChar The character index (0 - OLED_CUSTOM_CHARS)
+	*	@param	pBitmap Array of 5 bytes representing rows of character bitmap
+	*/
+	void createChar(uint8_t nChar, uint8_t[]); //!@todo Why can't I add a name for the second parameter?
 
 	/**	@brief	Writes a character to the display at current location
 	 * 	@param	nChar Character to write
 	 * 	@return	<i>size_t</i> Quantity of characters written (always 1)
 	 */
-	virtual size_t write(uint8_t);
+	virtual size_t write(uint8_t Char);
 	using Print::write;
 
 private:
@@ -181,12 +186,19 @@ private:
 	void Draw(uint8_t nChar, uint8_t nCursor = 0x00);
 	//Redraws the character at the current cursor position including underscore cursor if enabled
 	void Redraw();
+	// Writes a character to the display
+	//	nChar The character to write
+	//	returns quantity of characters written
+	//	@note	This function performs the actual screen update and is required to allow write() to work with autoscroll
+	size_t Write(uint8_t Char);
+
 	uint8_t m_nResetPin;// Index of pin connected to OLED reset - 0xFF if not used
 	uint8_t m_nColumns;		// Quantity of columns in display
 	uint8_t m_nRows;		// Quantity of rows in display
 	uint8_t m_nCursor;		// 0x80 if cursor enabled else 0x00
 	uint8_t m_nX;			// Current cursor column
 	uint8_t m_nY;			// Current cursor row
+	uint8_t m_nRotation;	// Current rotation (OLED_ROTATE_0 | OLED_ROTATE_90 | OLED_ROTATE_180 | OLED_ROTATE_270)
 	bool m_bLeftToRight;// True left-to-right mode. False for right-to-left mode
 	bool m_bAutoscroll;		// True to enable autoscroll mode
 	uint8_t m_pCustom[OLED_CUSTOM_CHARS][5]; // Custom character glyphs
