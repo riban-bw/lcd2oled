@@ -299,7 +299,7 @@ void lcd2oled::noAutoscroll()
 
 size_t lcd2oled::write(uint8_t Char)
 {
-  //!@todo Test autoscroll - Redraw is repeated in Write(). Can Write() be called after scrollDisplay?
+  //!@todo Redraw is repeated in Write(). Can Write() be called after scrollDisplay?
   if(0 == Write(Char))
     return (0);
   if(m_bAutoscroll)

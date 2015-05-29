@@ -29,7 +29,7 @@ lcd2oled lcd(12);
 void setup() {
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
-  // initialize the serial communications:
+  // Initialise the serial communications:
   Serial.begin(9600);
 }
 
