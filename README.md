@@ -1,4 +1,5 @@
 # lcd2oled
+![Logo](docs/lcd2oled.png)
 An Arduino library providing communication with SDD1306 OLED display over I2C interface using same API as LiquidCrystal library.
 
 # Introduction
