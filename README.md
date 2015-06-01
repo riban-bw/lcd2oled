@@ -29,11 +29,11 @@ led2oled(3);
 
 # Usage
 The library is designed to use the same API as the LiquidCrystal library. Documentation for the LiquidCrystal library (and hence description on its use) may be found here: http://www.arduino.cc/en/Reference/LiquidCrystal.
-There are some functions that are not implemented:
+There are some functions that are not fully implemented:
 
 | Function      | Description                                 |
 | ------------- | ------------------------------------------- |
-| blink         | There is no feature within SDD1306 to flash |
+| blink         | There is no feature within SDD1306 to flash - this feature requires regular refresh of oled |
 | setRowOffsets | This is not documented in LiquidCrystal     |
 
 lcd2oled provides extra functions, specific to the OLED.
@@ -71,6 +71,7 @@ The default character set is similar to that used by the HD44780. This differs f
 | 92        | non-Latin char | / |
 | 126 | Left arrow | ~ |
 | 127 | Right arrow | BELL |
+| 128 | All pixels on | All pixels on |
 
 lcd2oled provides an ASCII character set (but with character 127 (BELL) replaced with a superscript o (degrees symbol)). This may be used by defining OLED_USE_ASCII as C++ preprocessor variable, e.g. by adding -DOLED_USE_ASCII to C++ compile options or by editing charsets.h and uncommenting the line:
 
