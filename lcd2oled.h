@@ -128,6 +128,11 @@ class lcd2oled : public Print
      */
     void blink();
 
+    /**	@brief	Refreshes display with any time dependent data
+     * 	@note	Call regularly if blink() is used, otherwise no need to use this function
+     */
+    void Refresh();
+
     /**	@brief	Scroll whole display one character to left
      */
     void scrollDisplayLeft();
@@ -186,14 +191,16 @@ class lcd2oled : public Print
     //	nCursor = 0x80 to draw underscore cursor (actually this is logically OR'd with each column so could also use 0x40 to strike through)
     void Draw(uint8_t nChar, uint8_t nCursor = 0x00);
     //Redraws the character at the current cursor position including underscore cursor if enabled
-    void Redraw();
+    //	bBlank = true to blank the character (default false)
+    void Redraw(bool bBlank = false);
     // Writes a character to the display
     //	nChar The character to write
     //	returns quantity of characters written
     //	@note	This function performs the actual screen update and is required to allow write() to work with autoscroll
     size_t Write(uint8_t Char);
 
-    uint8_t m_nResetPin; // Index of pin connected to OLED reset - 0xFF if not used
+    unsigned long m_lBlinkTime; // Time to toggle character cursor flashing - 0 to disable
+    uint8_t m_nResetPin; 	// Index of pin connected to OLED reset - 0xFF if not used
     uint8_t m_nColumns;		// Quantity of columns in display
     uint8_t m_nRows;		// Quantity of rows in display
     uint8_t m_nCursor;		// 0x80 if cursor enabled else 0x00
@@ -202,6 +209,7 @@ class lcd2oled : public Print
     uint8_t m_nRotation;			// Current rotation (OLED_ROTATE_0 | OLED_ROTATE_90 | OLED_ROTATE_180 | OLED_ROTATE_270)
     bool m_bLeftToRight;			// True left-to-right mode. False for right-to-left mode
     bool m_bAutoscroll;		// True to enable autoscroll mode
+    bool m_bBlinkOn;		// True if flashing cursor is asserted (all black)
     uint8_t m_pCustom[OLED_CUSTOM_CHARS][5]; // Custom character glyphs
     uint8_t * m_pBuffer; 	// Pointer to buffer holding current display
 };

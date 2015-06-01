@@ -39,7 +39,10 @@ void loop() {
   delay(3000);
   // Turn on the blinking cursor:
   lcd.blink();
-  delay(3000);
+  // Delay must not block - need to call lcd.Refresh() regularly
+  unsigned long blinkDelay = millis() + 3000;
+  while(millis() < blinkDelay)
+	  lcd.Refresh();
 }
 
 

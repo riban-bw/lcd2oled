@@ -7,6 +7,7 @@
 #include "charsets.h"
 
 lcd2oled::lcd2oled(uint8_t ResetPin) :
+		m_lBlinkTime(0),
         m_nResetPin(ResetPin),
         m_nCursor(0),
         m_nRotation(OLED_ROTATE_0),
@@ -231,14 +232,27 @@ void lcd2oled::createChar(uint8_t nIndex, uint8_t* pBitmap)
 
 void lcd2oled::noBlink()
 {
-  //!@todo Warn that noBlink is not implemented
-//#pragma message "WARNING: noBlink() is not implemented in lcd2oled library"
+	m_lBlinkTime = 0;
+	if(m_bBlinkOn)
+	{
+		Redraw(); //Turn blink cursor off
+		m_bBlinkOn = false;
+	}
 }
 
 void lcd2oled::blink()
 {
-  //!@todo Warn that blink is not implemented
-//#pragma message "WARNING: blink() is not implemented in lcd2oled library"
+	m_lBlinkTime = millis() + 500;
+	if(m_lBlinkTime == 0)
+		m_lBlinkTime += 500;
+}
+
+void lcd2oled::Refresh()
+{
+	if(m_lBlinkTime <= millis())
+		return;
+	Redraw(m_bBlinkOn);
+	m_bBlinkOn = !m_bBlinkOn;
 }
 
 void lcd2oled::scrollDisplayLeft()
@@ -351,11 +365,14 @@ void lcd2oled::Draw(uint8_t nChar, uint8_t nCursor)
   SendData(0); //Add inter-character space
 }
 
-void lcd2oled::Redraw()
+void lcd2oled::Redraw(bool bBlank)
 {
   if(m_nX >= m_nColumns)
     return;
-  Draw(m_pBuffer[m_nY * m_nColumns + m_nX], m_nCursor);
+  if(bBlank)
+	  Draw(OLED_CHAR_ALLON, 0);
+  else
+	  Draw(m_pBuffer[m_nY * m_nColumns + m_nX], m_nCursor);
   //Reposition cursor
   SendCommand(OLED_CMD_COLUMN_LOW | ((6 * m_nX + OLED_LEFT_BORDER) & 0x0F));
   SendCommand(OLED_CMD_COLUMN_HIGH | (((6 * m_nX + OLED_LEFT_BORDER) & 0xF0) >> 4));
