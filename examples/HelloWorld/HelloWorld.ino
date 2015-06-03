@@ -1,5 +1,5 @@
 /*
-  lcd2olde Library - Hello World
+  lcd2oled Library - Hello World
 
  Demonstrates the use a 128x64 pixel (21x8 character) OLED display.  The lcd2oled
  library works with OLED displays that are compatible with the
