@@ -23,6 +23,11 @@ lcd2oled::lcd2oled(uint8_t ResetPin) :
   Wire.begin();
 }
 
+lcd2oled::~lcd2oled()
+{
+	//Empty destructor removes compile warnings - should be optimised out by compiler
+}
+
 void lcd2oled::Reset()
 {
   if(m_nResetPin)
@@ -36,9 +41,9 @@ void lcd2oled::Reset()
 void lcd2oled::clear()
 {
   noDisplay(); //Turn display off to hide slow scan clear
-  for(unsigned int i = 0; i < 1024; ++i) //!@todo replace 1024 with appropriate constant or calculated value
+  for(unsigned int i = 0; i < 1024; ++i) //Datasheet states GDDRAM is 128 x 64 bits = 1024 bytes
     SendData(0);
-  memset(m_pBuffer, 32, m_nColumns * m_nRows); //fill buffer with spaces ' '
+  memset(m_pBuffer, OLED_CHAR_SPACE, m_nColumns * m_nRows); //fill buffer with spaces ' '
   display();
   home();
 }
@@ -80,8 +85,11 @@ void lcd2oled::begin(uint8_t nColumns, uint8_t nRows, uint8_t nCharSize, bool bC
   SendCommand(0x7F);
   //Select horizontal mode (wrap at end of row)
   SendCommand(OLED_CMD_MEMORY_ADDRESS_MODE, OLED_MODE_HORIZONTAL); //Reset sets to Page mode but we want horizontal
-  //Set offset to zero
+  //Set vertical offset to zero
   SendCommand(OLED_CMD_OFFSET, 0);
+  //Set horizontal offset
+  SendCommand(OLED_CMD_COLUMN_LOW | (OLED_LEFT_BORDER & 0x0F));
+  SendCommand(OLED_CMD_COLUMN_HIGH | ((OLED_LEFT_BORDER >> 4) & 0x0F));
   //OLED physical configuration
   SendCommand(OLED_CMD_MUX_RATIO, 0x3F);
   SendCommand(OLED_CMD_PIN_CONFIG, OLED_PIN_ALT);
@@ -129,10 +137,9 @@ void lcd2oled::Rotate(uint8_t nRotate)
       break;
     case OLED_ROTATE_90:
       //!@todo Implement 90 degree rotation
-#pragma message "Rotate 90 degrees not implemented"
       break;
     case OLED_ROTATE_270:
-#pragma message "Rotate 270 degrees not implemented"
+        //!@todo Implement 270 degree rotation
       break;
   }
 }
@@ -191,8 +198,8 @@ void lcd2oled::setCursor(uint8_t x, uint8_t y)
     noCursor(); //Remove cursor from current position
   m_nX = x;
   m_nY = y;
-  SendCommand(OLED_CMD_COLUMN_LOW | ((6 * m_nX + OLED_LEFT_BORDER) & 0x0F)); //!@todo May be able to remove OLED_LEFT_BORDER by configuring display with borders
-  SendCommand(OLED_CMD_COLUMN_HIGH | (((6 * m_nX + OLED_LEFT_BORDER) & 0xF0) >> 4));
+  SendCommand(OLED_CMD_COLUMN_LOW | ((6 * m_nX) & 0x0F)); //!@todo May be able to remove OLED_LEFT_BORDER by configuring display with borders
+  SendCommand(OLED_CMD_COLUMN_HIGH | (((6 * m_nX) & 0xF0) >> 4));
   SendCommand(OLED_CMD_PAGE_START | m_nY);
   if(bCursor)
     cursor(); //Show cursor at new position
@@ -230,6 +237,11 @@ void lcd2oled::createChar(uint8_t nIndex, uint8_t* pBitmap)
   }
 }
 
+void lcd2oled::inverse(bool bInverse)
+{
+	SendCommand(bInverse?OLED_CMD_INVERSE:OLED_CMD_NORMAL);
+}
+
 void lcd2oled::noBlink()
 {
 	m_lBlinkTime = 0;
@@ -261,7 +273,7 @@ void lcd2oled::scrollDisplayLeft()
   for(uint8_t nRow = 0; nRow < m_nRows; ++nRow)
   {
     setCursor(0, nRow);
-    Write(32);
+    Write(OLED_CHAR_SPACE);
   }
   ConfigureScrolling(OLED_SCROLLRATE_2);
   for(uint8_t i = 0; i < 6; ++i)
@@ -279,7 +291,7 @@ void lcd2oled::scrollDisplayRight()
   for(uint8_t nRow = 0; nRow < m_nRows; ++nRow)
   {
     setCursor(m_nColumns - 1, nRow);
-    write(32);
+    write(OLED_CHAR_SPACE);
   }
   ConfigureScrolling(OLED_SCROLLRATE_2, true);
   for(uint8_t i = 0; i < 6; ++i)
@@ -333,8 +345,8 @@ size_t lcd2oled::Write(uint8_t Char)
   if(m_nX >= m_nColumns)
     return 0; //Don't attempt to draw beyond end of display
   uint8_t nChar = Char;
-  if((nChar < 32 && nChar >= OLED_CUSTOM_CHARS) || (nChar > 127))
-    nChar = 32; //Draw space if invalid character
+  if((nChar < OLED_CHAR_SPACE && nChar >= OLED_CUSTOM_CHARS) || (nChar > 127))
+    nChar = OLED_CHAR_SPACE; //Draw space if invalid character
   Draw(nChar);
   m_pBuffer[m_nY * m_nColumns + m_nX] = nChar; //Update buffer (used to redraw with / without cursor undesrscore)
   if(m_bLeftToRight)
@@ -357,10 +369,10 @@ void lcd2oled::Draw(uint8_t nChar, uint8_t nCursor)
 {
   for(uint8_t nColumn = 0; nColumn < 5; ++nColumn)
   {
-    if(nChar < 32)
+    if(nChar < OLED_CHAR_SPACE)
       SendData(m_pCustom[nChar][nColumn] | nCursor);
     else
-      SendData(pgm_read_byte_near(&FONT_5x7[nChar - 32][nColumn]) | nCursor);
+      SendData(pgm_read_byte_near(&FONT_5x7[nChar - OLED_CHAR_SPACE][nColumn]) | nCursor);
   }
   SendData(0); //Add inter-character space
 }
@@ -374,7 +386,7 @@ void lcd2oled::Redraw(bool bBlank)
   else
 	  Draw(m_pBuffer[m_nY * m_nColumns + m_nX], m_nCursor);
   //Reposition cursor
-  SendCommand(OLED_CMD_COLUMN_LOW | ((6 * m_nX + OLED_LEFT_BORDER) & 0x0F));
-  SendCommand(OLED_CMD_COLUMN_HIGH | (((6 * m_nX + OLED_LEFT_BORDER) & 0xF0) >> 4));
+  SendCommand(OLED_CMD_COLUMN_LOW | ((6 * m_nX) & 0x0F));
+  SendCommand(OLED_CMD_COLUMN_HIGH | (((6 * m_nX) & 0xF0) >> 4));
   SendCommand(OLED_CMD_PAGE_START | m_nY);
 }

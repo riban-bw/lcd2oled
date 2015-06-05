@@ -115,6 +115,7 @@ const byte FONT_5x7[][5] PROGMEM =
   {0xFF,0xFF,0xFF,0xFF,0xFF}  // all on
 };
 
+#define OLED_CHAR_SPACE				32  //All pixels off - must be first element of character set
 #define OLED_CHAR_ALLON				128 //All pixels on
 
 #else
@@ -225,6 +226,7 @@ const byte FONT_5x7[][5] PROGMEM =
   {0xFF,0xFF,0xFF,0xFF,0xFF}  // all on
 };
 
+#define OLED_CHAR_SPACE				32  //All pixels off - must be first element of character set
 #define OLED_CHAR_ALLON				128 //All pixels on
 
 #endif

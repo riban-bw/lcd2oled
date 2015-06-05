@@ -31,6 +31,11 @@ class lcd2oled : public Print
      */
     lcd2oled(uint8_t ResetPin = 0xFF);
 
+    /**	@brief	Destructor
+     *
+     */
+    virtual ~lcd2oled();
+
     /**	@brief	Reset OLED modules
      *	@note	If reset pin not configured then this does nothing
      *	@todo	Perform software reset if hardware reset not configured
@@ -167,6 +172,11 @@ class lcd2oled : public Print
      *	@param	pBitmap Array of 5 bytes representing rows of character bitmap
      */
     void createChar(uint8_t nChar, uint8_t[]); //!@todo Why can't I add a name for the second parameter?
+
+    /**	@brief	Set display inverse (black<->white)
+     * 	@param	bInverse True to inverse, false for normal display
+     */
+    void inverse(bool bInverse = true);
 
     /**	@brief	Writes a character to the display at current location
      * 	@param	nChar Character to write
