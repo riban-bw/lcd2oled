@@ -132,8 +132,9 @@ void lcd2oled::Rotate(uint8_t nRotate)
       SendCommand(OLED_CMD_SCAN_LEFT2RIGHT);
       break;
     case OLED_ROTATE_180:
+    	//!@todo Text is reversed!!!
       SendCommand(OLED_CMD_SCAN_BOTTOM2TOP);
-      SendCommand(OLED_CMD_SCAN_RIGHT2LEFT);
+//      SendCommand(OLED_CMD_SCAN_RIGHT2LEFT);
       break;
     case OLED_ROTATE_90:
       //!@todo Implement 90 degree rotation
@@ -265,6 +266,7 @@ void lcd2oled::Refresh()
 		return;
 	Redraw(m_bBlinkOn);
 	m_bBlinkOn = !m_bBlinkOn;
+	//!@todo blink / refresh is not working
 }
 
 void lcd2oled::scrollDisplayLeft()

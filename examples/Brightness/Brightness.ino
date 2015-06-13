@@ -33,8 +33,15 @@ void setup() {
 
 void loop() {
 	for(byte nBrightness = 0; nBrightness <= 0xFF; ++nBrightness)
+	{
 		lcd.SetBrightness(nBrightness);
-	for(byte nBrightness = 0xFF; nBrightness >= 0; --nBrightness)
+		delay(20);
+	}
+	for(byte nBrightness = 0xFF; nBrightness > 0; --nBrightness)
+	{
+		//!@todo Not fading out
 		lcd.SetBrightness(nBrightness);
+		delay(20);
+	}
 }
 
